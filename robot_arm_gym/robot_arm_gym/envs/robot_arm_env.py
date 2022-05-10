@@ -99,6 +99,7 @@ class RobotArmEnvV0(gym.Env):
         self.past_dist = np.inf    
     
     def take_action(self, action):
+        a = 1
         pass
     
     # 보상 구하는 함수
