@@ -31,6 +31,8 @@ class RobotArmEnvV0(gym.Env):
         self.theta2 = 0
         self.theta3 = 0
         
+        self.pos_y, self.pos_x = self._theta2position()
+        
         self.min = 0
         self.max = self.r1 + self.r2 + self.r3
         
@@ -42,9 +44,31 @@ class RobotArmEnvV0(gym.Env):
         self.action_space = self._get_action_space()
         
         self.state = None
-        pass
         
     def step(self, action):
+        
+        # action
+        if type(action) == list: action = np.array(action)
+        
+        # one step elapse
+        self.elapsed_steps += 1
+        
+        # after one step, the state is
+        self.theta1 += action[0]
+        self.theta2 += action[1]
+        self.theta3 += action[2]
+        self.pos_y, self.pos_x = self._theta2position()
+        
+        
+        observation = {"theta1": self.theta1,
+                       "theta2": self.theta2, 
+                       "theta3": self.theta3, 
+                       "pos_x": self.pos_x,
+                       "pos_y": self.pos_y,
+                       "distance": self._get_distance()}
+        
+        reward, done, info = self._get_reward()
+        
         '''
         Agrument:
             action
@@ -74,8 +98,17 @@ class RobotArmEnvV0(gym.Env):
             use this for learning.
             
         '''
-        return ob, reward, done, {} # {}엔 info
+        
+        # return
+        return observation, reward, done, info # {}엔 info
+
+    def take_action(self, action):
+        # 정말로 행동을 나타내는 부분
+        
+        a = 1
+        pass
     
+    # Reset시 상태
     def reset(self, theta_s = None):
         '''
             Environment reset
@@ -96,11 +129,18 @@ class RobotArmEnvV0(gym.Env):
         self.state = theta_s
         self.theta1, self.theta2, self.theta3 = self.state
         self.goal = self._get_goal()
-        self.past_dist = np.inf    
-    
-    def take_action(self, action):
-        a = 1
-        pass
+        self.pos_y, self.pos_x = self._theta2position()
+        self.past_dist = np.inf
+        
+        
+        observation = {"theta1": self.theta1,
+                       "theta2": self.theta2, 
+                       "theta3": self.theta3, 
+                       "pos_x": self.pos_x,
+                       "pos_y": self.pos_y,
+                       "distance": self._get_distance()}
+        
+        return observation
     
     # 보상 구하는 함수
     def _get_reward(self):
@@ -142,11 +182,11 @@ class RobotArmEnvV0(gym.Env):
     def _get_distance(self):
         
         goal_x, goal_y = self.goal
-        current_x, current_y = self._theta2position()
+        current_x, current_y = self.pos_x, self.pos_y
         
         return m.sqrt((goal_x - current_x) ** 2 + (goal_y - current_y) ** 2)
     
-    # 세타를 통해 위치 구하기
+    # 세타를 통해 위치 구하기(y,x)
     def _theta2position(self):
         return np.array([    self.r1 * m.sin(self.theta1 * degree2rad) +
                     self.r2 * m.sin((self.theta1 + self.theta2) * degree2rad) + 
