@@ -11,7 +11,7 @@
     
 '''
 
-CLIENT_PORT_NUMBER = 20000
+CLIENT_PORT_NUMBER = 14007
 
 
 # import socket library
@@ -39,7 +39,7 @@ while True:
 
     # send message encoded to server(IP and port)  
     print("send to message...")
-    sock.sendto(msg.encode(), ("127.0.0.1", CLIENT_PORT_NUMBER))
+    sock.sendto(msg.encode(), ("192.168.50.90", CLIENT_PORT_NUMBER))
     
     # get message and address
     print("receive message from server...")
