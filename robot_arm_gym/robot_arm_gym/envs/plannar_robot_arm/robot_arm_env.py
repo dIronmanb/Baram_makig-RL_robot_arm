@@ -1,3 +1,4 @@
+from tkinter.font import ROMAN
 import gym
 import math as m
 import random
@@ -16,9 +17,11 @@ rad2degree = 180/PI
 
 class RobotArmEnvV0(gym.Env):
     
+    metadata = {'render.models': ['human']} # visualize robot arm model
     max_episode_steps = 300
     
     def __init__(self):
+        super(RobotArmEnvV0, self).__init__()
         
         self.margin = 1.0
         self.goal = self._get_goal() # 내가 입력으로 넣어주는 부분
@@ -40,11 +43,13 @@ class RobotArmEnvV0(gym.Env):
         self.elapsed_steps = 0
         
         self.observation_space = self._get_observation_space()
-        
         self.action_space = self._get_action_space()
         
+        # ------ #
         self.state = None
-        
+        self.observation = None
+    
+    
     def step(self, action):
         
         # action
