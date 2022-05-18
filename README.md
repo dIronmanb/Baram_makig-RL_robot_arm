@@ -7,3 +7,6 @@
 -  The simulation is planned to be linked with `pygame` later...
 -  Use `UDP Protocol` to exchange values with my computer and server because of resources being used externally
 (To hand over the actual value of the robot...to be continued!)
+
+# Robot arm image
+<img src = "/" alt>
