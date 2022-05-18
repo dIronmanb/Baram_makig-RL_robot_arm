@@ -9,4 +9,8 @@
 (To hand over the actual value of the robot...to be continued!)
 
 # Robot arm image
-<img src = "/" alt>
+<img src = "https://github.com/dIronmanb/Baram_makig-RL_robot_arm/blob/master/image_files/image_01.jpg" width = 550>
+
+<!-- img src = "/data/Github_Management/Baram_makig-RL_robot_arm/image_files/image_01.jpg" width = 550>
+
+
