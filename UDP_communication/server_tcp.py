@@ -1,8 +1,11 @@
 from socket import *
 
 
-host = "172.17.0.4"
-port = 6007
+host = "172.17.0.4" # docker server
+port = 6007         # forwarding: 14007 -> 6007
+
+# External -> Internal -> Docker (IP)
+# 각각엔 모두 다른 IP와 Port number를 가지고 있다.
 
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
