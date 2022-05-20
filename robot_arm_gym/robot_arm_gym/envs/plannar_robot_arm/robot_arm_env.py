@@ -1,5 +1,5 @@
-from argparse import Action
-from tkinter.font import ROMAN
+# from argparse import Action
+# from tkinter.font import ROMAN
 import gym
 import math as m
 import random
@@ -19,13 +19,12 @@ rad2degree = 180/PI
 class RobotArmEnvV0(gym.Env):
     
     metadata = {'render.models': ['human']} # visualize robot arm model
-    max_episode_steps = 300
+    max_episode_steps = 500
     
     def __init__(self):
         super(RobotArmEnvV0, self).__init__()
         
         self.margin = 1.0
-        self.past_dist = np.inf #맨 처음 past_dist의 경우는 무한대로
         
         self.r1 = 10.5
         self.r2 = 10.5
@@ -40,7 +39,7 @@ class RobotArmEnvV0(gym.Env):
         self.max = self.r1 + self.r2 + self.r3
         
         self.goal = self._get_goal() # 내가 입력으로 넣어주는 부분
-        
+        self.past_dist = self._get_distance() #맨 처음 past_dist의 경우는 무한대로
         
         self.elapsed_steps = 0
         
@@ -70,12 +69,18 @@ class RobotArmEnvV0(gym.Env):
         self.theta1 += action[0]
         self.theta2 += action[1]
         self.theta3 += action[2]
+        
+        # 현재 각도들이 가능한 범위 안에 있는지 확인하기
+        self._is_possible_angles(action)
+        
+        
         self.pos_y, self.pos_x = self._theta2position()
         
         
         observation = {"theta1": self.theta1,
                        "theta2": self.theta2, 
-                       "theta3": self.theta3, 
+                       "theta3": self.theta3,
+                       "Goal"  : self.goal, 
                        "pos_x": self.pos_x,
                        "pos_y": self.pos_y,
                        "distance": self._get_distance()}
@@ -144,12 +149,13 @@ class RobotArmEnvV0(gym.Env):
         self.theta1, self.theta2, self.theta3 = self.state
         self.goal = self._get_goal()
         self.pos_y, self.pos_x = self._theta2position()
-        self.past_dist = np.inf
+        self.past_dist = self._get_distance()
         
         
         observation = {"theta1": self.theta1,
                        "theta2": self.theta2, 
                        "theta3": self.theta3, 
+                       "Goal"  : self.goal, 
                        "pos_x": self.pos_x,
                        "pos_y": self.pos_y,
                        "distance": self._get_distance()}
@@ -167,7 +173,8 @@ class RobotArmEnvV0(gym.Env):
         # elapsed_step이 max_step보다 크면
         if self.elapsed_steps >= self.max_episode_steps:
             done = True
-            reward = -10
+            reward = -50
+            self.elapsed_steps = 0
             info['final_status'] = 'max_steps_exceeded'
             
         
@@ -184,11 +191,14 @@ class RobotArmEnvV0(gym.Env):
             else:
                 # 이전 거리와 비교하여 목표지점에 더 다다랐으면
                 if self.past_dist - dist > 0:
+                    # print("Self.past_dist: {}".format(self.past_dist))
+                    # print("Current dist: {}".format(dist))
                     reward = 0.5
                 # 그게 아니라면
                 else:
                     reward = 0
-                    self.past_dist = dist
+                
+                self.past_dist = dist
                     
         return reward, done, info
     
@@ -198,17 +208,21 @@ class RobotArmEnvV0(gym.Env):
         goal_x, goal_y = self.goal
         current_x, current_y = self.pos_x, self.pos_y
         
-        return m.sqrt((goal_x - current_x) ** 2 + (goal_y - current_y) ** 2)
+        return round (m.sqrt((goal_x - current_x) ** 2 + (goal_y - current_y) ** 2), 4)
+        
+    
     
     # 세타를 통해 위치 구하기(y,x)
     def _theta2position(self):
-        return np.array([    self.r1 * m.sin(self.theta1 * degree2rad) +
+        pos = np.array([  self.r1 * m.sin(self.theta1 * degree2rad) +
                     self.r2 * m.sin((self.theta1 + self.theta2) * degree2rad) + 
                     self.r3 * m.sin((self.theta1 + self.theta2 + self.theta3) * degree2rad) 
                     ,
                     self.r1 * m.cos(self.theta1 * degree2rad) +
                     self.r2 * m.cos((self.theta1 + self.theta2) * degree2rad) +
                     self.r3 * m.cos((self.theta1 + self.theta2 + self.theta3) * degree2rad)] )
+        
+        return np.round(pos, 4)
         
     # 목표 지점 랜덤하게 생성
     def _get_goal(self):
@@ -249,19 +263,63 @@ class RobotArmEnvV0(gym.Env):
             goal[1] = m.trunc(r_max * m.sin(theta))
             goal[0] = m.trunc(r_max * m.cos(theta))
             
-        return goal
+        return np.round(goal, 4)
     
+    def _is_possible_angles(self, action):
+        
+        if self.pos_y < 0:
+            self.theta1 -= action[0]
+            self.theta2 -= action[1]
+            self.theta3 -= action[2]
+            return
+
+        if self.theta1 < 0:
+            self.theta1 = 0
+        elif self.theta1 > 270:
+            self.theta1 = 270
+            
+        if self.theta2 < 0:
+            self.theta2 = 0
+        elif self.theta2 > 270:
+            self.theta2 = 270
+            
+        if self.theta3 < 0:
+            self.theta3 = 0
+        elif self.theta3 > 270:
+            self.theta3 = 270
+            
+        # if self.theta1 < -135:
+        #     self.theta1 = 135
+        # elif self.theta1 > 135:
+        #     self.theta1 = 135
+            
+        # if self.theta2 < -135:
+        #     self.theta2 = -135
+        # elif self.theta2 > 135:
+        #     self.theta2 = 135
+            
+        # if self.theta3 < -135:
+        #     self.theta3 = -135
+        # elif self.theta3 > 135:
+        #     self.theta3 = 135
+                        
     def _get_observation_space(self):
         # 관찰 가능한 theta는 0 ~ 270이다.
-        max_obs = np.array([0] * 3)
-        min_obs = np.array([270] * 3)
-
         # theta1, theta2, theta3, pos_x, pos_y        
         # max_obs = np.array([0, 0, 0, -self.max, 0])
         # min_obs = np.array([270, 270, 270, self.max, self.max)
         
+        
+        '''
+        기존에 사용한 코드
+        max_obs = np.array([0] * 3)
+        min_obs = np.array([270] * 3)
         return spaces.Box(low = min_obs, high = max_obs, dtype = np.float32)
-    
+        '''
+        
+        # 또다른 코드
+        return spaces.MultiDiscrete([270, 270, 270])
+        
     def _get_action_space(self):
         # 액션으로 취할 수 있는 건 각 세타마다
         # [-1, 0, 1]이다.
