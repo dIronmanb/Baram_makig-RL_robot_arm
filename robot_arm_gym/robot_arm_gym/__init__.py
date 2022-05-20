@@ -1,8 +1,8 @@
 from gym.envs.registration import register
 
 register(
-    id = 'RobotArmEnvV0',
-    entry_point = "robot_arm_gym.robot_arm_gym.envs.plannar_robot_arm:RobotArmEnvV0",
+    id = 'RobotArmEnv-v0',
+    entry_point = "robot_arm_gym.robot_arm_gym.envs.plannar_robot_arm.robot_arm_env:RobotArmEnvV0",
     
 )
 

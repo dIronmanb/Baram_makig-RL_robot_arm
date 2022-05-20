@@ -1,3 +1,4 @@
+from argparse import Action
 from tkinter.font import ROMAN
 import gym
 import math as m
@@ -24,7 +25,6 @@ class RobotArmEnvV0(gym.Env):
         super(RobotArmEnvV0, self).__init__()
         
         self.margin = 1.0
-        self.goal = self._get_goal() # 내가 입력으로 넣어주는 부분
         self.past_dist = np.inf #맨 처음 past_dist의 경우는 무한대로
         
         self.r1 = 10.5
@@ -39,6 +39,8 @@ class RobotArmEnvV0(gym.Env):
         self.min = 0
         self.max = self.r1 + self.r2 + self.r3
         
+        self.goal = self._get_goal() # 내가 입력으로 넣어주는 부분
+        
         
         self.elapsed_steps = 0
         
@@ -48,7 +50,13 @@ class RobotArmEnvV0(gym.Env):
         # ------ #
         self.state = None
         self.observation = None
-    
+        
+        # print(self.observation_space)
+        # print(self.action_space)
+        # print(self.observation_space.sample())
+        # print(self.observation_space.sample())
+            
+        
     
     def step(self, action):
         
@@ -128,8 +136,9 @@ class RobotArmEnvV0(gym.Env):
             if isinstance(theta_s) == list:
                 theta_s = np.array(theta_s)
         
+        # 수정해야할 부분
         else:
-            theta_s = np.zeros(self.observation_space[0])
+            theta_s = np.zeros(len(self.observation_space.sample()))
         
         self.state = theta_s
         self.theta1, self.theta2, self.theta3 = self.state
@@ -211,7 +220,7 @@ class RobotArmEnvV0(gym.Env):
         return self._is_in_workspace(goal)     
     
     # 해당 goal이 workspace안에 있는지를 판별
-    def _is_in_workspace(goal):
+    def _is_in_workspace(self, goal):
             
         # (x, y)
         
@@ -253,7 +262,7 @@ class RobotArmEnvV0(gym.Env):
         
         return spaces.Box(low = min_obs, high = max_obs, dtype = np.float32)
     
-    def _get_action_space():
+    def _get_action_space(self):
         # 액션으로 취할 수 있는 건 각 세타마다
         # [-1, 0, 1]이다.
         """
@@ -289,11 +298,13 @@ class RobotArmEnvV0(gym.Env):
         pass
 
     # error를 감지하는 코드: 근데 내가 통신을 하는 게 아니니까 2학기 작품에서 계속...
+
+
     
-class RobotArmEnvV1(RobotArmEnvV0):
+# class RobotArmEnvV1(RobotArmEnvV0):
     
-    def __init__(self):
-        super(RobotArmEnvV1, self).__init__()
+#     def __init__(self):
+#         super(RobotArmEnvV1, self).__init__()
     
 
 

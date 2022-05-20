@@ -1,1 +1,3 @@
 *.txt
+/temp
+get-pip.py

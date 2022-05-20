@@ -18,7 +18,8 @@ print("Connected to", str(addr))
 
 data = connectionSocket.recv(1024)
 msg = data.decode("utf8")
-print("Received Data:", msg)
+print("Received Data:", msg)    
+    
 
 msg = msg.upper()
 
