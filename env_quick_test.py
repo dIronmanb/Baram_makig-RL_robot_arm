@@ -1,5 +1,4 @@
 import gym
-import tkinter
 import robot_arm_gym.robot_arm_gym 
 # from robot_arm_gym.robot_arm_gym.envs.plannar_robot_arm import robot_arm_env
 
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     
     
     sum = 0
-    for iter in range(500):
+    for iter in range(500  ):
         action = env.action_space.sample()
     
         for i in range(len(action)):
